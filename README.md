@@ -4,21 +4,26 @@
 
 IR signal duty is 38khz modulated, 50% duty cycle
 
+Sampling from a Sensibo IR gateway, since I don't have access to the factory remote.
+
 ![waveform.png](waveform.png)
 
-Timings (in microseconds) - inverted (high = no light)
+## Timings 
 
 * packets start with a 4400us pulse, followed by 4400us wait
-* Subsequent pulse are always 400us long
+* Subsequent pulses are always 400us long
 * A High bit is encoded as a 600us wait between pulses
 * A low bit is encoded as a 1600us wait between pulses
 * Packets end with another 4400us pulse, and always have at least a 5000us wait betwen them
 
 Signals are 2 packets wide, but the 2nd packet seems to just be a 1's complement of the first...not sure if this is a compatibility feature of the Sensibo controller, or a feature of the factory remote (which I no longer have).
 
-I've been choosing to ignore the first packet as the "inverted" one for now, and use the second, as it encodes things more intuitively.
+I've been choosing to ignore the first packet, as the second encodes things more intuitively (e.g. '1' is 'on', and higher temperatures are encoded as larger hex values). I've yet to confirm if both codes are necessary to operate the device.
 
 ![pulseview_decode_2.png](pulseview_decode_2.png)
+![pulseview_decode.png](pulseview_decode.png)
+
+## Packet Structure
 
 Packets are always exactly six octets long.
 
@@ -51,6 +56,8 @@ Packets can be one of two different formats, and only one will be sent at a time
 	Octet 4, 5: Always 0xff
 	Octet 6: Checksum? 
 
+### Byte 2 Encoding
+
 |Power|Bit 7|
 |---|---|
 |On|1|
@@ -64,7 +71,7 @@ Packets can be one of two different formats, and only one will be sent at a time
 |Low |0|0|1|
 
 |HVAC Mode|Bit 2|Bit 1|Bit 0|
-|---|---|---|
+|---|---|---|---|
 |Fan  |1|0|0|
 |Heat |0|1|1|
 |Auto |0|1|0|
