@@ -121,3 +121,7 @@ Oscillation control is sent as an idempotent on/off command packet
 | Light Toggle							| a2 08 ff ff ff 75 |
 | Swing on 								| a2 02 ff ff ff 7e |
 | Swing off								| a2 01 ff ff ff 7c |
+
+## Checksum calculation
+
+TODO
