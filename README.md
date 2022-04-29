@@ -36,7 +36,7 @@ Packets can be one of two different formats, and only one will be sent at a time
 		0xa1 = state (normal packet, sends modes and target temperature)
 		0xa2 = command (sends a command that does NOT include modes and target)
 	Octet 2: Power State + Fan mode + HVAC Mode
-	MSB	7: 1=power on, 0=power off
+	MSB	7: Power
 		6: Always 0
 		5: Fan Mode
 		4: Fan Mode
@@ -50,6 +50,26 @@ Packets can be one of two different formats, and only one will be sent at a time
 		The Senisbo API doesn't allow trying to send values outside of this - I'll have to see what happens when we try
 	Octet 4, 5: Always 0xff
 	Octet 6: Checksum? 
+
+|Power|Bit 7|
+|---|---|
+|On|1|
+|Off|0|
+
+|Fan Mode|Bit 5|Bit 4|Bit 3|
+|---|---|---|---|
+|Auto|1|0|0|
+|High|0|1|1|
+|Med |0|1|0|
+|Low |0|0|1|
+
+|HVAC Mode|Bit 2|Bit 1|Bit 0|
+|---|---|---|
+|Fan  |1|0|0|
+|Heat |0|1|1|
+|Auto |0|1|0|
+|Dry  |0|0|1|
+|Cool |0|0|0|
 
 ## Command Packet
 
@@ -71,28 +91,26 @@ Oscillation control is sent as an idempotent on/off command packet
 	Octet 3-5: Always 0xff
 	Octet 6: Checksum? 
 
-## Checksum calculation
-
-Still working on this, but it seems consistent. Sample data:
+## Sample Data
 
 | Function | Data |
 | --- | --- |
-| (Off), Cool, Full Swing, Fan Auto, 63			| a1 20 61 ff ff cf |
-| (Off), Cool, No Swing, Fan Low, 63				| a1 08 61 ff ff e7 |
-| (On),  Cool, Full Swing, Fan Auto, 63			| a1 a0 61 ff ff cf |
-| (On), Cool, No Swing, Fan Low, 63				| a1 88 61 ff ff 67 |
-| On, (Heat), Full Swing, Fan Auto, 63			| a1 a3 61 ff ff 4c |
-| On, (Cool), Full Swing, Fan Auto, 63			| a1 a0 61 ff ff 4f |
-| On, (Fan), Full Swing, Fan Auto, --				| a1 a4 7e ff ff 58 |
-| On, (Dry), Full Swing, Fan Auto, 63				| a1 81 61 ff ff 6e |
-| On, (Auto), Full Swing, Fan Auto, 63			| a1 82 61 ff ff 6d |
-| On, Cool, No Swing, Fan High, (63)				| a1 98 61 ff ff 7b |
-| On, Cool, No Swing, (Fan Auto), 63				| a1 a0 61 ff ff 4f |
-| On, Cool, No Swing, (Fan Strong), 63			| a1 98 61 ff ff 7b |
-| On, Cool, No Swing, (Fan High), 63				| a1 98 61 ff ff 7b |
-| On, Cool, No Swing, (Fan Med), 63				| a1 90 61 ff ff 77 |
-| On, Cool, No Swing, (Fan Low), 63				| a1 88 61 ff ff 67 |
-| On, Cool, No Swing, (Fan Quiet), 63				| a1 88 61 ff ff 67 |
-| Light Toggle									| a2 08 ff ff ff 75	 |
-| Swing on 										| a2 02 ff ff ff 7e |
-| Swing off										| a2 01 ff ff ff 7c |
+| (Off), Cool, Fan Auto, 63				| a1 20 61 ff ff cf |
+| (Off), Cool, Fan Low, 63				| a1 08 61 ff ff e7 |
+| (On),  Cool, Fan Auto, 63				| a1 a0 61 ff ff cf |
+| (On), Cool, Fan Low, 63				| a1 88 61 ff ff 67 |
+| On, (Heat), Fan Auto, 63				| a1 a3 61 ff ff 4c |
+| On, (Cool), Fan Auto, 63				| a1 a0 61 ff ff 4f |
+| On, (Fan), Fan Auto, --				| a1 a4 7e ff ff 58 |
+| On, (Dry), Fan Auto, 63				| a1 81 61 ff ff 6e |
+| On, (Auto), Fan Auto, 63				| a1 82 61 ff ff 6d |
+| On, Cool, Fan High, (63)				| a1 98 61 ff ff 7b |
+| On, Cool, (Fan Auto), 63				| a1 a0 61 ff ff 4f |
+| On, Cool, (Fan Strong), 63			| a1 98 61 ff ff 7b |
+| On, Cool, (Fan High), 63				| a1 98 61 ff ff 7b |
+| On, Cool, (Fan Med), 63				| a1 90 61 ff ff 77 |
+| On, Cool, (Fan Low), 63				| a1 88 61 ff ff 67 |
+| On, Cool, (Fan Quiet), 63				| a1 88 61 ff ff 67 |
+| Light Toggle							| a2 08 ff ff ff 75 |
+| Swing on 								| a2 02 ff ff ff 7e |
+| Swing off								| a2 01 ff ff ff 7c |
