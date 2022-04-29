@@ -75,28 +75,24 @@ Oscillation control is sent as an idempotent on/off command packet
 
 Still working on this, but it seems consistent. Sample data:
 
-	(Off), Cool, Full Swing, Fan Auto, 63			a1 20 61 ff ff cf
-	(Off), Cool, No Swing, Fan Low, 63				a1 08 61 ff ff e7
-	(On),  Cool, Full Swing, Fan Auto, 63			a1 a0 61 ff ff cf
-	(On), Cool, No Swing, Fan Low, 63				a1 88 61 ff ff 67
-
-	On, (Heat), Full Swing, Fan Auto, 63			a1 a3 61 ff ff 4c
-	On, (Cool), Full Swing, Fan Auto, 63			a1 a0 61 ff ff 4f
-	On, (Fan), Full Swing, Fan Auto, --				a1 a4 7e ff ff 58
-		Fan mode does not have a target temp
-	On, (Dry), Full Swing, Fan Auto, 63				a1 81 61 ff ff 6e
-	On, (Auto), Full Swing, Fan Auto, 63			a1 82 61 ff ff 6d
-		HA lists this HVAC mode as "Heat/Cool", Senibo as "Auto"
-	On, Cool, No Swing, Fan High, (63)				a1 98 61 ff ff 7b
-	On, Cool, No Swing, (Fan Auto), 63				a1 a0 61 ff ff 4f
-	On, Cool, No Swing, (Fan Strong), 63			a1 98 61 ff ff 7b
-	On, Cool, No Swing, (Fan High), 63				a1 98 61 ff ff 7b
-		Fan Strong and Fan High are identical states
-	On, Cool, No Swing, (Fan Med), 63				a1 90 61 ff ff 77
-	On, Cool, No Swing, (Fan Low), 63				a1 88 61 ff ff 67
-	On, Cool, No Swing, (Fan Quiet), 63				a1 88 61 ff ff 67
-		Fan Low and Fan Quiet are identical states
-
-	Light Toggle									a2 08 ff ff ff 75	
-	Swing on 										a2 02 ff ff ff 7e
-	Swing off										a2 01 ff ff ff 7c
+| Function | Data |
+| --- | --- |
+| (Off), Cool, Full Swing, Fan Auto, 63			| a1 20 61 ff ff cf |
+| (Off), Cool, No Swing, Fan Low, 63				| a1 08 61 ff ff e7 |
+| (On),  Cool, Full Swing, Fan Auto, 63			| a1 a0 61 ff ff cf |
+| (On), Cool, No Swing, Fan Low, 63				| a1 88 61 ff ff 67 |
+| On, (Heat), Full Swing, Fan Auto, 63			| a1 a3 61 ff ff 4c |
+| On, (Cool), Full Swing, Fan Auto, 63			| a1 a0 61 ff ff 4f |
+| On, (Fan), Full Swing, Fan Auto, --				| a1 a4 7e ff ff 58 |
+| On, (Dry), Full Swing, Fan Auto, 63				| a1 81 61 ff ff 6e |
+| On, (Auto), Full Swing, Fan Auto, 63			| a1 82 61 ff ff 6d |
+| On, Cool, No Swing, Fan High, (63)				| a1 98 61 ff ff 7b |
+| On, Cool, No Swing, (Fan Auto), 63				| a1 a0 61 ff ff 4f |
+| On, Cool, No Swing, (Fan Strong), 63			| a1 98 61 ff ff 7b |
+| On, Cool, No Swing, (Fan High), 63				| a1 98 61 ff ff 7b |
+| On, Cool, No Swing, (Fan Med), 63				| a1 90 61 ff ff 77 |
+| On, Cool, No Swing, (Fan Low), 63				| a1 88 61 ff ff 67 |
+| On, Cool, No Swing, (Fan Quiet), 63				| a1 88 61 ff ff 67 |
+| Light Toggle									| a2 08 ff ff ff 75	 |
+| Swing on 										| a2 02 ff ff ff 7e |
+| Swing off										| a2 01 ff ff ff 7c |
