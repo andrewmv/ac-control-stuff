@@ -124,4 +124,15 @@ Oscillation control is sent as an idempotent on/off command packet
 
 ## Checksum calculation
 
-TODO
+Don't know how these are being calcuated yet...here, have some more samples:
+
+|Function|Data|Checksum|
+|---|---|---|
+|On, Cool, Low, 83	|a1 88 75 ff ff |7d| 
+|on, cool, low, 82	|a1 88 74 ff ff |7c | 
+|on, cool, low, 81	|a1 88 73 ff ff |79 | 
+|on, cool, low, 80 	|a1 88 72 ff ff |78 | 
+|on, cool, low, 79	|a1 88 71 ff ff |7b | 
+|on, cool, low, 78 	|a1 88 70 ff ff |7a | 
+|on, cool, low, 77 	|a1 88 6f ff ff |6e | 
+|off,cool, low, 77 	|a1 08 6f ff ff |ee| 
