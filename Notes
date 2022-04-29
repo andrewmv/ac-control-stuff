@@ -1,0 +1,100 @@
+Notes
+
+Timings (in us) - inverted
+low = 38khz pulse
+high = no light
+---
+Signal is 2 packets
+Margin of error +/- 10us
+Packet start:	low 4200, high 4400
+Followed by bit separator, then packet
+Bit separator: low 380
+Bits are one of 640, 1680
+Packets are 50 bits wide
+Packet end: 5200
+
+Captures:
+
+On, Cool, Full Swing, Light, Fan High, 70
+5E 67 96 00 00 8C
+
+On, Cool, Full Swing, Light, Fan High, 71
+5E 67 96 00 00 8D
+
+Off, Cool, Full Swing, Light, Fan High, 71
+5E 67 96 00 00 8C
+
+On, Cool, Full Swing, Light, Fan High, 69->70
+5E 67 97 00 00 8D
+
+Up -> On, Cool, Full Swing, Light, Fan High, 70->71
+5E 67 96 00 00 8C
+
+Up -> On, Cool, Full Swing, Light, Fan High, 71-72
+5E 67 95 00 00 8F
+
+72->71
+5E 67 96 00 00 8C
+
+71->70
+5E 67 97 00 00 8D (A1 98 68 FF FF 72)
+
+Captures (Packet 2 - Inverted)
+On, Cool, Full Swing, Light, Fan High, 62 		a1 98 60 ff ff 73
+On, Cool, Full Swing, Light, Fan High, 71 		a1 98 69 ff ff 73
+On, Cool, Full Swing, Light, Fan High, 72 		a1 98 6a ff ff 70
+On, Cool, Full Swing, Light, Fan High, 73 		a1 98 6b ff ff 71
+On, Cool, Full Swing, Light, Fan High, 86 		a1 98 78 ff ff 62
+
+On, Cool, Full Swing, Fan Auto, 62 				a1 a0 60 ff ff 4e
+On, Cool, Full Swing, Fan Auto, 63 				a1 a0 61 ff ff f4
+
+(Off), Cool, Full Swing, Fan Auto, 63			a1 20 61 ff ff cf
+(Off), Cool, No Swing, Fan Low, 63				a1 08 61 ff ff e7
+(On),  Cool, Full Swing, Fan Auto, 63			a1 a0 61 ff ff cf
+(On), Cool, No Swing, Fan Low, 63				a1 88 61 ff ff 67
+
+On, (Heat), Full Swing, Fan Auto, 63			a1 a3 61 ff ff 4c
+On, (Cool), Full Swing, Fan Auto, 63			a1 a0 61 ff ff 4f
+On, (Fan), Full Swing, Fan Auto, --				a1 a4 7e ff ff 58
+	Fan mode does not have a target temp
+On, (Dry), Full Swing, Fan Auto, 63				a1 81 61 ff ff 6e
+On, (Auto), Full Swing, Fan Auto, 63			a1 82 61 ff ff 6d
+	HA lists this HVAC mode as "Heat/Cool", Senibo as "Auto"
+On, Cool, No Swing, Fan High, (63)				a1 98 61 ff ff 7b
+On, Cool, No Swing, (Fan Auto), 63				a1 a0 61 ff ff 4f
+On, Cool, No Swing, (Fan Strong), 63			a1 98 61 ff ff 7b
+On, Cool, No Swing, (Fan High), 63				a1 98 61 ff ff 7b
+	Fan Strong and Fan High are identical states
+On, Cool, No Swing, (Fan Med), 63				a1 90 61 ff ff 77
+On, Cool, No Swing, (Fan Low), 63				a1 88 61 ff ff 67
+On, Cool, No Swing, (Fan Quiet), 63				a1 88 61 ff ff 67
+	Fan Low and Fan Quiet are identical states
+
+Light Toggle									a2 08 ff ff ff 75	
+Swing on 										a2 02 ff ff ff 7e
+Swing off										a2 01 ff ff ff 7c
+
+Power toggles contain a third packet?
+
+
+Octet 1: Packet Type
+	0xa1 = state (normal packet, sends modes and target temperature)
+	0xa2 = command (sends a command that does NOT include modes and target)
+Octet 2: Power State + Fan mode + HVAC Mode
+MSB	7: 1=power on, 0=power off
+	6: Always 0
+	5: Fan Mode
+	4: Fan Mode
+	3: Fan Mode
+	2: HVAC Mode
+	1: HVAC Mode
+LSB	0: HVAC Mode 
+Octet 3: Target temperature (Degress F + 34)
+	62 Farenheit -> 0x60
+	86 Farenheit -> 0x78
+Octet 4, 5: Always 0xff
+Octet 6: Checksum? (Current temp? Previous state?)
+
+Light is sent as a toggle signal with no state info
+Oscillation is sent as an on/off signal with no other state info
