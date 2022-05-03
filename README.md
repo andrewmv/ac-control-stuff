@@ -142,17 +142,17 @@ Checksum function seems to be:
 * Reverse the order of the bits every octet (0x01 -> 0x80, etc.)
 * Add a 0xff padding byte
 * Sum all five bytes, including the unused ones (three 0xff's in total)
-* Modulo 0xff
+* AND 0xff (modulo 0x0100)
 * Reverse the order of the bits again
 * Negate (one's compliment)
 
 Some messy and ineffecient Python:
 
-		def rev(data):
-	      return int(format(data, '0%db' % 8)[::-1], 2)
-	    def check1(p1, p2, p3):
-		    return hex( (rev((0xff + rev(p1) + rev(p2) + rev(p3) + 0xff + 0xff) & 0xff) ^ 0xff ))
-		check1(0xa1, 0x88, 0x75)
+	def rev(data):
+	  return int(format(data, '0%db' % 8)[::-1], 2)
+	def check1(p1, p2, p3):
+	    return hex( (rev((0xff + rev(p1) + rev(p2) + rev(p3) + 0xff + 0xff) & 0xff) ^ 0xff ))
+	check1(0xa1, 0x88, 0x75)
 
 ### Device: Wynter?
 
