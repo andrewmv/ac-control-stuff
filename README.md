@@ -225,7 +225,7 @@ Packets being with a 8800us start pulse followed by a 4600us wait, and are 4 byt
 
 Bytes are encoded LSB first which is the oppostite of the Insignia device
 
-![pulseview_decode_whynter.png](![pulseview_decode_whynter.png])
+![pulseview_decode_whynter.png](!pulseview_decode_whynter.png)
 
 Supported fucntions
 
