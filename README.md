@@ -1,6 +1,8 @@
 ## Experiments in Air Conditoner IR code recording
 
-### Device: Insignia NS-AC08PWH1
+## Device: Insignia NS-AC08PWH1
+
+![insignia_remote_sm.jpg](insignia_remote_sm.jpg)
 
 IR signal duty is 38khz modulated, 50% duty cycle
 
@@ -8,7 +10,7 @@ Sampling from a Sensibo IR gateway, since I don't have access to the factory rem
 
 ![waveform.png](waveform.png)
 
-## Timings 
+### Timings 
 
 * packets start with a 4400us pulse, followed by 4400us wait
 * Subsequent pulses are always 400us long
@@ -25,7 +27,7 @@ I've been choosing to ignore the first packet, as the second encodes things more
 ![pulseview_decode_2.png](pulseview_decode_2.png)
 ![pulseview_decode.png](pulseview_decode.png)
 
-## Packet Structure
+### Packet Structure
 
 Packets are always exactly six octets long.
 
@@ -34,7 +36,7 @@ Packets can be one of two different formats, and only one will be sent at a time
 * State packets begin with 0xa1, and encode power state, fan mode, HVAC mode, and target temperature. These are fully idempotent and declarative, representing the intended state of the device, rather than the changes to make to it.
 * Command packets begin with 0xa2, and encode specific changes that are not included in the state.
 
-## State Packet
+### State Packet
 
 ![state_packet_structure.png](state_packet_structure.png)
 
@@ -57,7 +59,7 @@ Packets can be one of two different formats, and only one will be sent at a time
 	Octet 4, 5: Always 0xff
 	Octet 6: Checksum 
 
-### Byte 2 Encoding
+#### Byte 2 Encoding
 
 |Power|Bit 7|
 |---|---|
@@ -79,7 +81,7 @@ Packets can be one of two different formats, and only one will be sent at a time
 |Dry  |0|0|1|
 |Cool |0|0|0|
 
-## Command Packet
+### Command Packet
 
 ![command_packet_structure.png](command_packet_structure.png)
 
@@ -102,7 +104,7 @@ Oscillation control is sent as an idempotent on/off command packet
 	Octet 3-5: Always 0xff
 	Octet 6: Checksum? 
 
-## Follow Me Packet
+### Follow Me Packet
 
 ![fm_packet_structure.png](fm_packet_structure.png)
 
@@ -146,6 +148,8 @@ The AC will disable Follow Me mode if it does not receive an update packet for 7
 
 Note - a full FM packet, including the current reported remote temperature, is included in the packet that sends the Disable command.
 
+### Follow Me Sample Data
+
 | Function | Data |
 | --- | --- |
 | (FM), Cool, Auto, T75 A75				| a4 a0 6d ff 2d b6 |
@@ -155,7 +159,7 @@ Note - a full FM packet, including the current reported remote temperature, is i
 | FM, Cool, Auto, T62 A74				| a4 a0 60 7f 2b 7f |
 | (N), Cool, Auto, T62 A74				| a4 a0 60 3f 2b 00 |
 
-## Sample Data
+### Sample Data
 
 | Function | Data |
 | --- | --- |
@@ -211,7 +215,9 @@ Some messy and ineffecient Python:
 	    return hex( (rev((0xff + rev(p1) + rev(p2) + rev(p3) + 0xff + 0xff) & 0xff) ^ 0xff ))
 	check1(0xa1, 0x88, 0x75)
 
-### Device: Wynter?
+## Device: Whynter Remote
+
+![whynter_remote.jpg](whynter_remote.jpg)
 
 Timings and byte encodings appear to be the same, but packet structure is different
 
