@@ -217,13 +217,15 @@ Some messy and ineffecient Python:
 
 ## Device: Whynter Remote
 
-![whynter_remote.jpg](whynter_remote.jpg)
+![whynter_remote_sm.jpg](whynter_remote_sm.jpg)
 
 Timings and byte encodings appear to be the same, but packet structure is different
 
 Packets being with a 8800us start pulse followed by a 4600us wait, and are 4 bytes long, but do not have a stop block.
 
 Bytes are encoded LSB first which is the oppostite of the Insignia device
+
+![pulseview_decode_whynter.png](![pulseview_decode_whynter.png])
 
 Supported fucntions
 
