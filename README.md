@@ -104,7 +104,7 @@ Oscillation control is sent as an idempotent on/off command packet
 | --- | --- |
 | (Off), Cool, Fan Auto, 63				| a1 20 61 ff ff cf |
 | (Off), Cool, Fan Low, 63				| a1 08 61 ff ff e7 |
-| (On),  Cool, Fan Auto, 63				| a1 a0 61 ff ff cf |
+| (On),  Cool, Fan Auto, 63				| a1 a0 61 ff ff 4f |
 | (On), Cool, Fan Low, 63				| a1 88 61 ff ff 67 |
 | On, (Heat), Fan Auto, 63				| a1 a3 61 ff ff 4c |
 | On, (Cool), Fan Auto, 63				| a1 a0 61 ff ff 4f |
@@ -124,15 +124,118 @@ Oscillation control is sent as an idempotent on/off command packet
 
 ## Checksum calculation
 
-Don't know how these are being calcuated yet...here, have some more samples:
+Last octet transmitted in each packet is the checksum. Samples:
 
 |Function|Data|Checksum|
 |---|---|---|
-|On, Cool, Low, 83	|a1 88 75 ff ff |7d| 
+|On, Cool, Low, 83	|a1 88 75 ff ff |7d | 
 |on, cool, low, 82	|a1 88 74 ff ff |7c | 
 |on, cool, low, 81	|a1 88 73 ff ff |79 | 
 |on, cool, low, 80 	|a1 88 72 ff ff |78 | 
 |on, cool, low, 79	|a1 88 71 ff ff |7b | 
 |on, cool, low, 78 	|a1 88 70 ff ff |7a | 
 |on, cool, low, 77 	|a1 88 6f ff ff |6e | 
-|off,cool, low, 77 	|a1 08 6f ff ff |ee| 
+|off,cool, low, 77 	|a1 08 6f ff ff |ee | 
+
+Checksum function seems to be:
+
+* Reverse the order of the bits every octet (0x01 -> 0x80, etc.)
+* Add a 0xff padding byte
+* Sum all five bytes, including the unused ones (three 0xff's in total)
+* Modulo 0xff
+* Reverse the order of the bits again
+* Negate (one's compliment)
+
+Some messy and ineffecient Python:
+
+		def rev(data):
+	      return int(format(data, '0%db' % 8)[::-1], 2)
+	    def check1(p1, p2, p3):
+		    return hex( (rev((0xff + rev(p1) + rev(p2) + rev(p3) + 0xff + 0xff) & 0xff) ^ 0xff ))
+		check1(0xa1, 0x88, 0x75)
+
+### Device: Wynter?
+
+Timings and byte encodings appear to be the same, but packet structure is different
+
+Packets being with a 8800us start pulse followed by a 4600us wait, and are 4 bytes long, but do not have a stop block.
+
+Bytes are encoded LSB first which is the oppostite of the Insignia device
+
+Supported fucntions
+
+HVAC Modes:
+
+* Cool
+* Dry
+* Fan
+
+3 Fan Speeds
+
+Timer function (enabling and adusting sends codes)
+
+F/C adjust 
+
+|Function|Data|
+|---|---|
+|cool,high,74	| ed e7 ea ad |
+|cool,high,75	| ed e7 ea 2d |
+|cool,high,76	| ed e7 ea cd |
+|cool,high,77	| ed e7 ea 4d |
+|cool,high,78 	| ed e7 ea 8d |
+|cool,high,79	| ed e7 ea 0d |
+|cool,high,80 	| ed e7 ea f5 |
+|cool,high,89 	| ed e7 ea 65 |
+|cool,med, 80 	| ed d7 ea f5 |
+|cool,low, 80 	| ed b7 ea f5 |
+|F->C 			| ed b7 ee 2f |
+|C->F 			| ed b7 ea f5 |
+|Timer on 8		| ed b7 e8 f5 |
+|Timer down 7 	| ed b7 18 f5 |
+|Timer down 6 	| ed b7 98 f5 |
+|Timer down 5 	| ed b7 58 f5 |
+|Timer off 		| ed b7 5a f5 |
+|dry ,low, -- 	| ed bd fa f5 |
+|fan,low, -- 	| ed be ea f5 |
+|fan,high, -- 	| ed ee 5a f5 |
+|off,cool,high,80|ed e7 b3 f5 |
+|off,fan,low,80 | ed be b3 f5 |
+|off,cool,low,80| ed b7 b3 f5 |
+|cool,high,80 	| ed e7 ea f5 |
+|dry, high,80 	| ed ed ea f5 |
+|fan, high,80 	| ed ee ea f5 |
+|on,cool,high,80| ed e7 ea f5 |
+|off,cool,high,80|ed e7 b3 f5 |
+
+## Packet Structure
+
+* Octet 1: Device code - always 0xed
+* Octet 2: HVAC Mode, Fan Speed
+LSB	0: Always 1
+	1: Fan Speed
+	2: Fan Speed
+	3: Fan Speed
+	4: HVAC Mode
+	5: HVAC Mode
+	6: HVAC Mode
+MSB	7: HVAC Mode
+* Octet 3: Timer, F/C, Power
+LSB	0: Timer
+	1: Timer
+	2: Timer
+	3: Timer
+	4: Power
+	5: F/C
+	6: ?
+MSB	7: ?
+* Octet 4: Target temperature
+Farenheit temperature directly recorded in ones compliment, LSB first, 
+so 74 degrees farenheit = 0xAD.
+Celcius temperature is the same, but with 16 degress (0x10) subtracted, so 29 degress celcius = 0xF2
+
+|Function|Data|
+|---|---|
+|on,cool,high,c,29	| ed ed ee 4f |
+|on,cool,high,c,30	| ed e7 ee 8f |
+|on,cool,high,c,31	| ed e7 ee 0f |
+|on,cool,high,c,32	| ed e7 ee f7 |
