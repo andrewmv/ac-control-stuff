@@ -40,14 +40,21 @@ Up -> On, Cool, Full Swing, Light, Fan High, 71-72
 5E 67 97 00 00 8D (A1 98 68 FF FF 72)
 
 Captures (Packet 2 - Inverted)
-On, Cool, Full Swing, Light, Fan High, 62 		a1 98 60 ff ff 73
+On, Cool, Full Swing, Light, Fan High, 62 		a1 98 60 ff ff 7a
 On, Cool, Full Swing, Light, Fan High, 71 		a1 98 69 ff ff 73
 On, Cool, Full Swing, Light, Fan High, 72 		a1 98 6a ff ff 70
 On, Cool, Full Swing, Light, Fan High, 73 		a1 98 6b ff ff 71
+On, Cool, Full Swing, Light, Fan High, 78 		a1 98 70 ff ff 6a
 On, Cool, Full Swing, Light, Fan High, 86 		a1 98 78 ff ff 62
 
 On, Cool, Full Swing, Fan Auto, 62 				a1 a0 60 ff ff 4e
+On, Cool, Full Swing, Fan Auto, 86 				a1 a0 78 ff ff 5a
 On, Cool, Full Swing, Fan Auto, 63 				a1 a0 61 ff ff f4
+
+#Matching low nibble values, out of sequence:
+On, Cool, Full Swing, Fan Auto, 86 				a1 a0 78 ff ff 5a
+On, Cool, Full Swing, Light, Fan High, 62 		a1 98 60 ff ff 7a
+On, Cool, No Swing, (Fan Low), 62				a1 88 60 ff ff 66 #Fuck
 
 (Off), Cool, Full Swing, Fan Auto, 63			a1 20 61 ff ff cf
 (Off), Cool, No Swing, Fan Low, 63				a1 08 61 ff ff e7
@@ -95,6 +102,22 @@ Octet 3: Target temperature (Degress F + 34)
 	86 Farenheit -> 0x78
 Octet 4, 5: Always 0xff
 Octet 6: Checksum? (Current temp? Previous state?)
+	Sometimes changes:
+	On, Cool, Full Swing, Fan Auto, 63 				a1 a0 61 ff ff f4 (maybe this was a typo?)
+	On, Cool, No Swing, (Fan Auto), 63				a1 a0 61 ff ff 4f
+
 
 Light is sent as a toggle signal with no state info
 Oscillation is sent as an on/off signal with no other state info
+
+
+Moar samples!
+
+On, Cool, Low, 83	a1 88 75 ff ff 7d
+on, cool, low, 82	a1 88 74 ff ff 7c (- 1)
+on, cool, low, 81	a1 88 73 ff ff 79 (- 3)
+on, cool, low, 80 	a1 88 72 ff ff 78 (- 1)
+on, cool, low, 79	a1 88 71 ff ff 7b (+ 3)
+on, cool, low, 78 	a1 88 70 ff ff 7a (- 1)
+on, cool, low, 77 	a1 88 6f ff ff 6e (- 12)
+off,cool, low, 77 	a1 08 6f ff ff ee

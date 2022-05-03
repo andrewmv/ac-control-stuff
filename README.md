@@ -15,8 +15,10 @@ Sampling from a Sensibo IR gateway, since I don't have access to the factory rem
 * A High bit is encoded as a 600us wait between pulses
 * A low bit is encoded as a 1600us wait between pulses
 * Packets end with another 4400us pulse, and always have at least a 5000us wait betwen them
+* Sensibo gateway sends a 4400us START/STOP pulse at the beginning and end of both packets
+* Factory remote omits the 4400us pulse at the end of the second packet
 
-Signals are 2 packets wide, but the 2nd packet seems to just be a 1's complement of the first...not sure if this is a compatibility feature of the Sensibo controller, or a feature of the factory remote (which I no longer have).
+Signals are 2 packets wide, but the 2nd packet seems to just be a 1's complement of the first. Both the Senisbo gateway and the factory remote behave this way.
 
 I've been choosing to ignore the first packet, as the second encodes things more intuitively (e.g. '1' is 'on', and higher temperatures are encoded as larger hex values). I've yet to confirm if both codes are necessary to operate the device.
 
@@ -32,10 +34,9 @@ Packets can be one of two different formats, and only one will be sent at a time
 * State packets begin with 0xa1, and encode power state, fan mode, HVAC mode, and target temperature. These are fully idempotent and declarative, representing the intended state of the device, rather than the changes to make to it.
 * Command packets begin with 0xa2, and encode specific changes that are not included in the state.
 
-![state_packet_structure.png](state_packet_structure.png)
-![command_backet_structure.png](command_packet_structure.png)
-
 ## State Packet
+
+![state_packet_structure.png](state_packet_structure.png)
 
 	Octet 1: Packet Type
 		0xa1 = state (normal packet, sends modes and target temperature)
@@ -54,7 +55,7 @@ Packets can be one of two different formats, and only one will be sent at a time
 		86 Farenheit -> 0x78
 		The Senisbo API doesn't allow trying to send values outside of this - I'll have to see what happens when we try
 	Octet 4, 5: Always 0xff
-	Octet 6: Checksum? 
+	Octet 6: Checksum 
 
 ### Byte 2 Encoding
 
@@ -80,12 +81,15 @@ Packets can be one of two different formats, and only one will be sent at a time
 
 ## Command Packet
 
+![command_packet_structure.png](command_packet_structure.png)
+
 Display control is sent as a toggle command packet
 Oscillation control is sent as an idempotent on/off command packet 
 
 	Octet 1: Packet Type
 		0xa1 = state (normal packet, sends modes and target temperature)
 		0xa2 = command (sends a command that does NOT include modes and target)
+		0xa4 = follow me (updates thermostat, but NOT target state)
 	Octet 2: Power State + Fan mode + HVAC Mode
 	MSB	7: Always 0
 		6: Always 0
@@ -97,6 +101,59 @@ Oscillation control is sent as an idempotent on/off command packet
 	LSB	0: Disable Oscillation if set
 	Octet 3-5: Always 0xff
 	Octet 6: Checksum? 
+
+## Follow Me Packet
+
+![fm_packet_structure.png](fm_packet_structure.png)
+
+The AC has a "Follow Me" mode, in which the factory remote acts as a thermostat, and the AC unit uses updates from the remote in leiu of its own sensor.
+These packets should not cause the AC unit to beep or wake the display.
+This packets have header of 0xA4, and use the fifth octet to transmit temperature information.
+The forth packet seems to contain information about toggling Follow Me mode on an off
+Octets 2 and 3 are identical to a state packet
+
+The AC will disable Follow Me mode if it does not receive an update packet for 7 minutes.
+
+	Octet 1: Packet Type
+		0xa4 = follow me
+	Octet 2: Power State + Fan mode + HVAC Mode
+	MSB	7: Power
+		6: Always 0
+		5: Fan Mode
+		4: Fan Mode
+		3: Fan Mode
+		2: HVAC Mode
+		1: HVAC Mode
+	LSB	0: HVAC Mode 
+	Octet 3: Target temperature (Degress F + 34)
+	Octet 4: Follow Me Options
+	MSB 7: Follow Me Mode
+		6: Follow Me Mode
+		5: Always 1
+		4: Always 1
+		3: Always 1
+		2: Always 1
+		1: Always 1
+	LSB 0: Always 1
+	Octet 5: Follow Me reported temperature (Degrees F - 31)
+	Octet 6: Checksum 
+
+|FM Mode 	| Bit 7 | Bit 6 |
+| --- 		| --- 	| --- 	|
+| Enable	| 1 	| 1 	|
+| Update 	| 0 	| 1 	|
+| Disable 	| 0 	| 0 	|
+
+Note - a full FM packet, including the current reported remote temperature, is included in the packet that sends the Disable command.
+
+| Function | Data |
+| --- | --- |
+| (FM), Cool, Auto, T75 A75				| a4 a0 6d ff 2d b6 |
+| FM, Cool, Auto, (T62) A78				| a4 a0 6d 7f 2c 77 |
+| FM, Cool, Auto, T62 A76				| a4 a0 60 7f 2d 78 |
+| FM, Cool, Auto, T62 A75				| a4 a0 60 7f 2c 79 |
+| FM, Cool, Auto, T62 A74				| a4 a0 60 7f 2b 7f |
+| (N), Cool, Auto, T62 A74				| a4 a0 60 3f 2b 00 |
 
 ## Sample Data
 
