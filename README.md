@@ -55,6 +55,7 @@ Packets can be one of two different formats, and only one will be sent at a time
 	Octet 3: Target temperature (Degress F + 34)
 		62 Farenheit -> 0x60
 		86 Farenheit -> 0x78
+		Should be 0x7E for Dry and Fan modes
 		The Senisbo API doesn't allow trying to send values outside of this - I'll have to see what happens when we try
 	Octet 4, 5: Always 0xff
 	Octet 6: Checksum 
@@ -274,26 +275,27 @@ F/C adjust
 
 ## Packet Structure
 
-* Octet 1: Device code - always 0xed
-* Octet 2: HVAC Mode, Fan Speed
-LSB	0: Always 1
-	1: Fan Speed
-	2: Fan Speed
-	3: Fan Speed
-	4: HVAC Mode
-	5: HVAC Mode
-	6: HVAC Mode
-MSB	7: HVAC Mode
-* Octet 3: Timer, F/C, Power
-LSB	0: Timer
-	1: Timer
-	2: Timer
-	3: Timer
-	4: Power
-	5: F/C
-	6: ?
-MSB	7: ?
-* Octet 4: Target temperature
+	Octet 1: Device code - always 0xed
+	Octet 2: HVAC Mode, Fan Speed
+	LSB	0: Always 1
+		1: Fan Speed
+		2: Fan Speed
+		3: Fan Speed
+		4: HVAC Mode
+		5: HVAC Mode
+		6: HVAC Mode
+	MSB	7: HVAC Mode
+	Octet 3: Timer, F/C, Power
+	LSB	0: Timer
+		1: Timer
+		2: Timer
+		3: Timer
+		4: Power (0 = on, 1 = off)
+		5: F/C
+		6: ?
+	MSB	7: ?
+	Octet 4: Target temperature
+
 Farenheit temperature directly recorded in ones compliment, LSB first, 
 so 74 degrees farenheit = 0xAD.
 Celcius temperature is the same, but with 16 degress (0x10) subtracted, so 29 degress celcius = 0xF2
@@ -304,3 +306,21 @@ Celcius temperature is the same, but with 16 degress (0x10) subtracted, so 29 de
 |on,cool,high,c,30	| ed e7 ee 8f |
 |on,cool,high,c,31	| ed e7 ee 0f |
 |on,cool,high,c,32	| ed e7 ee f7 |
+
+### Byte 2 
+
+|Fan Speed 	| Bit 1 	| Bit 2 	| Bit 3 |
+| --- | --- | --- | --- |
+|High 		| 0 		| 0 		| 1 	|
+|Medium		| 0 		| 1 		| 0 	|
+|Low 		| 1 		| 0 		| 0 	|
+
+|HVAC Mode 	| Bit 4 	| Bit 5 	| Bit 6 	| Bit 7 |
+| --- 		| --- 		| --- 		| --- 		| --- 	|
+|Cool 		| 1 		| 0 		| 0 		| 0 	|
+|Dry 		| 0 		| 0 		| 1 		| 0 	|
+|Fan 		| 0 		| 0 		| 0 		| 1 	|
+
+### Byte 3
+
+It's not entirely clear how the timer and celcius modes work, but I don't have any use case for reverse engineering them right now.
