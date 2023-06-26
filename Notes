@@ -121,3 +121,92 @@ on, cool, low, 79	a1 88 71 ff ff 7b (+ 3)
 on, cool, low, 78 	a1 88 70 ff ff 7a (- 1)
 on, cool, low, 77 	a1 88 6f ff ff 6e (- 12)
 off,cool, low, 77 	a1 08 6f ff ff ee
+
+# Black & Decker AC
+
+May be rebranded whirlpool DG11D3-02
+
+## Timing
+
+Transmission starts with 9200us on pulse, 4400us off pulse
+0 bit is 1800us off pulse
+1 bit is 600us off pulse
+bits are separated by 600us on pulse
+
+## Packet structure
+
+Transmission is 7 bytes long
+
+|Mode 	|Fan 	|Temp 	|Power 	|Swing 	|Code 			|
+|--- 	|--- 	|--- 	|--- 	|--- 	|---			|
+|Cool 	|Low 	|83 	|On 	|Off 	| 7c 3e e7 ff ff c5 89 | 
+|Cool 	|Low 	|82 	|On 	|Off 	| 7c 7e e7 ff ff a5 c9 | 
+|Cool 	|Low 	|81 	|On 	|Off 	| 7c be e7 ff ff 25 09 | 
+|Cool 	|Low 	|80 	|On 	|Off 	| 7c fe e7 ff ff 65 49 | 
+|Cool 	|Low 	|79 	|On 	|Off 	| 7c 61 e7 ff ff b5 d2 |
+|Cool 	|Low 	|78 	|On 	|Off 	| 7c e1 e7 ff ff 75 52 |
+|Cool 	|Low 	|77 	|On 	|Off 	| 7c 11 e7 ff ff f5 bc |
+|Cool 	|Low 	|76 	|On 	|Off 	| 7c 91 e7 ff ff 0d 3c |
+|Cool 	|Low 	|75 	|On 	|Off 	| 7c 51 e7 ff ff 8d fc |
+|Cool 	|Med 	|75 	|On 	|Off 	| 7c 51 eb ff ff 85 f2 |
+|Cool 	|High 	|75 	|On 	|Off 	| 7c 51 e3 ff ff 89 fa |
+|Cool 	|Low 	|75 	|On 	|On 	| 74 51 e7 ff ff 85 f4 | 
+|Cool 	|Low 	|75 	|On 	|Off 	| 7c 51 e7 ff ff 8d fc | 
+|Cool 	|Low 	|75 	|On 	|On 	| 75 51 e7 ff ff 84 f5 | # LED on
+|Cool 	|Low 	|75 	|On 	|Off 	| 7d 51 e7 ff ff 8c fd | # LED on
+|Cool 	|Low 	|75 	|Off 	|Off 	| fc 51 e7 ff ff 4d 7c | 
+|Cool 	|Low 	|75 	|On 	|Off 	| 78 51 e7 ff ff 89 fa | # Sleep mode on
+|Dry 	|-- 	|-- 	|On 	|Off 	| 7c 11 d7 ff ff cd 92 |
+|Fan 	|Low 	|-- 	|On 	|Off 	| 7c 11 b7 ff ff ad e2 |
+|Fan 	|Med 	|-- 	|On 	|Off 	| 7c 11 bb ff ff a5 ea |
+|Fan 	|High 	|-- 	|On 	|Off 	| 7c 11 b3 ff ff a9 e6 |
+
+|Mode 	|Fan 	|Temp 	|Power 	|Swing 	|LED 	|Code 	|
+|--- 	|--- 	|--- 	|--- 	|--- 	|--- 	|--- 	|
+|Cool	|Low 	|(75) 	|On 	|Off 	|Off 	| 7c 51 e7 ff ff 8d fc |
+|Cool	|Low 	|75 	|On 	|Off 	|(On) 	| 7d 51 e7 ff ff 8c fd |
+|Cool	|Low 	|75 	|On 	|Off 	|(Off) 	| 7c 51 e7 ff ff 8d fc |
+
+The LED button on the remote control sets a bit (LSB of first octet) in the state which (disables all indicators on the head unit?)
+Any subsequent commands, including pressing the LED button again, disables this bit.
+The remote control seems to track this state, though it is not displayed on the LCD
+
+Fan speed is not selectable in dehumidify mode
+
+Last two octets seem to be checksum
+
+	Octet 1: Power, Swing, LED, Sleep Mode
+	MSB 7: Power (1 == off, 0 == on)
+		6: Always 1
+		5: Always 1
+		4: Always 1
+		3: Swing (1 == off, 0 == on)
+		2: Sleep Mode (1 == off, 0 == on)
+		1: Always 1
+		0: LED Mute (1 == dim)
+	Octet 2: Set Temp
+		Degrees F + 0d42 -> ones compliment -> reverse bit order
+	Octet 3: 
+	MSB 7: Always 1
+		6: HVAC Mode
+		5: HVAC Mode
+		4: HVAC Mode
+		3: Fan Speed
+		2: Fan Speed
+		1: Always 1
+		0: Always 1
+	Octet 4: Timer. 0xff == off
+	Octet 5: Always 0xff - Potentially unimplemented Follow Me feature?
+	Octet 6,7: Checksum
+
+| Fan Speed | Bit 3 | Bit 2 | 
+| --- 		| --- 	| ---	| 
+| Low 		| 0 	| 1 	|
+| Med 		| 1 	| 0 	|
+| High 		| 0 	| 0 	|
+
+| HVAC Mode | Bit 6 | Bit 5 | Bit 4 |
+| --- 		| --- 	| --- 	| --- 	|
+| Cool		| 1 	| 1 	| 0 	|
+| Dry 		| 1 	| 0 	| 1 	|
+| Fan 		| 0 	| 1 	| 1 	|

@@ -34,6 +34,12 @@ remote_transmitter:
     number: GPIO23
     inverted: false
   carrier_duty_percent: 50%
+ 
+remote_receiver:
+ pin: 
+   number: GPIO22
+   inverted: true
+ dump: nec
 
 # UART is used by the pmsx003
 uart:
@@ -55,30 +61,9 @@ sensor:
       name: "Living Room P10.0µm"
     # Need to merge stable back into climate_ir_insignia to get this option back
     # update_interval: 30000ms
-
-button:
-  - platform: template
-    id: living_room_ac_on
-    name: Living Room AC On
-    on_press:
-      then:
-        - remote_transmitter.transmit_raw:
-            code: [ 9100, -4300, 544, -1696, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -1696, 544, -1696, 544, -572, 544, -1696, 544, -1696, 544, -572, 544, -572, 544, -1696, 544, -1696, 544, -572, 544, -572, 544, -572, 544, -572, 544, -1696, 544, -572, 544, -1696, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -1696, 544, -1696, 544, -1696, 544, -1696, 544, -572, 544, -572, 544, -1696, 544, -572, 544, -1696, 544, -1696, 544, -572, 544, -572, 544, -572, 544, -1696, 544, -572, 544, -1696, 544 ]
-            carrier_frequency: 38000
-  - platform: template
-    id: living_room_ac_off
-    name: Living Room AC Off 
-    on_press:
-      then:
-        - remote_transmitter.transmit_raw:
-            code: [ 9100, -4300, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -1696, 544, -1696, 544, -572, 544, -1696, 544, -1696, 544, -572, 544, -572, 544, -1696, 544, -1696, 544, -572, 544, -572, 544, -572, 544, -572, 544, -1696, 544, -572, 544, -1696, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -1696, 544, -1696, 544, -1696, 544, -572, 544, -572, 544, -1696, 544, -572, 544, -572, 544, -1696, 544, -572, 544, -572, 544, -572, 544, -1696, 544, -572, 544, -1696, 544 ]
-            carrier_frequency: 38000
-  - platform: template
-    id: living_room_ac_fan
-    name: Living Room AC Fan Only
-    on_press:
-      then:
-        - remote_transmitter.transmit_raw:
-            code: [ 9100, -4300, 544, -1696, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -1696, 544, -1696, 544 ]
-            carrier_frequency: 38000
-  
+ 
+climate:
+  - platform: whynter
+    name: Living Room AC
+    # sensor: alpha_den_mobile_temperature
+    supports_heat: false

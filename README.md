@@ -220,6 +220,8 @@ Some messy and ineffecient Python:
 
 ![whynter_remote_sm.jpg](whynter_remote_sm.jpg)
 
+May be a rebranded Haier device
+
 Timings and byte encodings appear to be the same, but packet structure is different
 
 Packets being with a 8800us start pulse followed by a 4600us wait, and are 4 bytes long, but do not have a stop block.
