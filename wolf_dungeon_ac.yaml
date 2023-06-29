@@ -1,5 +1,5 @@
 # Insignia Portable AC Remote Control
-# 2022/05 AMV
+# 2022/06 AMV
 
 # Pin mappings
 # ---
@@ -81,6 +81,23 @@ sensor:
 
 # Air Conditoner Stuff #
 
+climate:
+  - platform: thermostat
+    name: "Wolf Cooler"
+    sensor: wolf_dungeon_temperature
+    min_cooling_off_time: 5s
+    min_cooling_run_time: 5s 
+    min_idle_time: 5s 
+    visual:
+      temperature_step: 1.0
+    cool_action: 
+      - button.press: wolf_cooler_on
+    idle_action:
+      - button.press: wolf_cooler_fan
+    off_mode:
+      then:
+        - button.press: wolf_cooler_off
+
 button:
   - platform: template
     id: wolf_cooler_on
@@ -104,7 +121,7 @@ button:
     on_press:
       then:
         - remote_transmitter.transmit_raw:
-            code: [ 9100, -4300, 544, -1696, 544, -572, 544, -572, 544, -572, 544, -572, 544, -572, 544, -1696, 544, -1696, 544 ]
+            code: [ 9177, -4258, 562, -1711, 562, -605, 536, -611, 563, -585, 562, -606, 537, -611, 537, -1734, 563, -1729, 538, -1733, 565, -1729, 538, -1733, 564, -583, 564, -1729, 538, -1733, 589, -1684, 589, -581, 537, -609, 589, -1685, 588, -581, 538, -609, 564, -1709, 564, -605, 539, -608, 538, -610, 564, -582, 565, -605, 537, -609, 589, -558, 565, -582, 590, -579, 538, -609, 565, -582, 589, -558, 565, -605, 562, -585, 565, -582, 565, -583, 589, -579, 539, -609, 589, -557, 565, -582, 589, -1703, 562, -585, 564, -1729, 562, -584, 562, -585, 564, -1708, 564, -605, 538, -609, 588, -559, 565, -582, 588, -1704, 565, -1707, 582, -1710, 563, -584, 590, -1683, 564]
             carrier_frequency: 38000
 
 # Radio control stuff #
