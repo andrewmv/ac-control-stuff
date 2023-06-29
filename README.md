@@ -6,7 +6,7 @@
 
 IR signal duty is 38khz modulated, 50% duty cycle
 
-Sampling from a Sensibo IR gateway, since I don't have access to the factory remote.
+Sampling from a Sensibo IR gateway - it produeced similar, but not identical, output to the factory remote
 
 ![waveform.png](waveform.png)
 
@@ -22,7 +22,7 @@ Sampling from a Sensibo IR gateway, since I don't have access to the factory rem
 
 Signals are 2 packets wide, but the 2nd packet seems to just be a 1's complement of the first. Both the Senisbo gateway and the factory remote behave this way.
 
-I've been choosing to ignore the first packet, as the second encodes things more intuitively (e.g. '1' is 'on', and higher temperatures are encoded as larger hex values). I've yet to confirm if both codes are necessary to operate the device.
+I've been choosing to ignore the first packet, as the second encodes things more intuitively (e.g. '1' is 'on', and higher temperatures are encoded as larger hex values). I've yet to confirm if both codes are necessary to operate the device (update - they are).
 
 ![pulseview_decode_2.png](pulseview_decode_2.png)
 ![pulseview_decode.png](pulseview_decode.png)
@@ -31,10 +31,11 @@ I've been choosing to ignore the first packet, as the second encodes things more
 
 Packets are always exactly six octets long.
 
-Packets can be one of two different formats, and only one will be sent at a time.
+Packets can be one of three different formats, and only one will be sent at a time.
 
 * State packets begin with 0xa1, and encode power state, fan mode, HVAC mode, and target temperature. These are fully idempotent and declarative, representing the intended state of the device, rather than the changes to make to it.
 * Command packets begin with 0xa2, and encode specific changes that are not included in the state.
+* Follow-Me packets begin with 0xa4, and encode remote temperature sensor update data.
 
 ### State Packet
 
@@ -42,7 +43,6 @@ Packets can be one of two different formats, and only one will be sent at a time
 
 	Octet 1: Packet Type
 		0xa1 = state (normal packet, sends modes and target temperature)
-		0xa2 = command (sends a command that does NOT include modes and target)
 	Octet 2: Power State + Fan mode + HVAC Mode
 	MSB	7: Power
 		6: Always 0
@@ -56,7 +56,6 @@ Packets can be one of two different formats, and only one will be sent at a time
 		62 Farenheit -> 0x60
 		86 Farenheit -> 0x78
 		Should be 0x7E for Dry and Fan modes
-		The Senisbo API doesn't allow trying to send values outside of this - I'll have to see what happens when we try
 	Octet 4, 5: Always 0xff
 	Octet 6: Checksum 
 
@@ -87,12 +86,11 @@ Packets can be one of two different formats, and only one will be sent at a time
 ![command_packet_structure.png](command_packet_structure.png)
 
 Display control is sent as a toggle command packet
+
 Oscillation control is sent as an idempotent on/off command packet 
 
 	Octet 1: Packet Type
-		0xa1 = state (normal packet, sends modes and target temperature)
 		0xa2 = command (sends a command that does NOT include modes and target)
-		0xa4 = follow me (updates thermostat, but NOT target state)
 	Octet 2: Power State + Fan mode + HVAC Mode
 	MSB	7: Always 0
 		6: Always 0
@@ -103,16 +101,20 @@ Oscillation control is sent as an idempotent on/off command packet
 		1: Enable Oscillation if set
 	LSB	0: Disable Oscillation if set
 	Octet 3-5: Always 0xff
-	Octet 6: Checksum? 
+	Octet 6: Checksum 
 
 ### Follow Me Packet
 
 ![fm_packet_structure.png](fm_packet_structure.png)
 
 The AC has a "Follow Me" mode, in which the factory remote acts as a thermostat, and the AC unit uses updates from the remote in leiu of its own sensor.
+
 These packets should not cause the AC unit to beep or wake the display.
+
 This packets have header of 0xA4, and use the fifth octet to transmit temperature information.
-The forth packet seems to contain information about toggling Follow Me mode on an off
+
+The forth packet seems to contain information about toggling Follow Me mode on an off.
+
 Octets 2 and 3 are identical to a state packet
 
 The AC will disable Follow Me mode if it does not receive an update packet for 7 minutes.
@@ -220,11 +222,11 @@ Some messy and ineffecient Python:
 
 ![whynter_remote_sm.jpg](whynter_remote_sm.jpg)
 
-May be a rebranded Haier device
+May be a rebranded Haier device (update - it is not).
 
 Timings and byte encodings appear to be the same, but packet structure is different
 
-Packets being with a 8800us start pulse followed by a 4600us wait, and are 4 bytes long, but do not have a stop block.
+Packets begin with a 8800us start pulse followed by a 4600us wait, and are 4 bytes long, but do not have a stop block.
 
 Bytes are encoded LSB first which is the oppostite of the Insignia device
 
