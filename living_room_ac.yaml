@@ -59,11 +59,17 @@ sensor:
     pm_10_0:
       id: livingroom_air_pm_10um
       name: "Living Room P10.0µm"
-    # Need to merge stable back into climate_ir_insignia to get this option back
-    # update_interval: 30000ms
+    update_interval: 30000ms
+  - platform: homeassistant
+    id: current_temperature
+    entity_id: climate.living_room_thermostat
+    attribute: current_temperature
+    internal: true
+    filters:
+      - lambda: return (x - 32.0) * (5.0/9.0);
  
 climate:
   - platform: whynter
     name: Living Room AC
-    # sensor: alpha_den_mobile_temperature
+    sensor: current_temperature
     supports_heat: false
